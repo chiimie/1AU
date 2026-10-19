@@ -310,3 +310,73 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   .step:before{left:14px}
   .go{padding:24px}
 }
+
+/* ---------- tema chiaro (pulsante in alto, oppure sistema in modalita' chiara) ---------- */
+:root[data-theme="light"]{
+  --bg:#f7f6fb; --bg2:#ffffff; --panel:rgba(22,18,48,.035); --panel2:rgba(22,18,48,.06);
+  --line:rgba(22,18,48,.1); --line2:rgba(22,18,48,.18);
+  --ink:#17142b; --muted:#555170; --dim:#76728e;
+  --storm:#d8203f; --calm:#1e7fb8; --ok:#14865a;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f7f6fb; --bg2:#ffffff; --panel:rgba(22,18,48,.035); --panel2:rgba(22,18,48,.06);
+    --line:rgba(22,18,48,.1); --line2:rgba(22,18,48,.18);
+    --ink:#17142b; --muted:#555170; --dim:#76728e;
+    --storm:#d8203f; --calm:#1e7fb8; --ok:#14865a;
+  }
+}
+/* regole che nel tema scuro usano colori fissi */
+:root[data-theme="light"] body{background-image:radial-gradient(1200px 600px at 85% -10%,rgba(255,122,61,.10),transparent 60%)}
+:root[data-theme="light"] .nav{background:rgba(247,246,251,.8)}
+:root[data-theme="light"] .lead{color:#3d3955}
+:root[data-theme="light"] .rule p{color:#46425f}
+:root[data-theme="light"] .hero-card{background:rgba(255,255,255,.78);box-shadow:0 30px 70px rgba(40,30,80,.12)}
+:root[data-theme="light"] .gauge-track{background:rgba(22,18,48,.08)}
+:root[data-theme="light"] .field input{background:#fff}
+:root[data-theme="light"] a,:root[data-theme="light"] .link,:root[data-theme="light"] .go-cta,:root[data-theme="light"] .go-t em,
+:root[data-theme="light"] .links a[aria-current="page"],:root[data-theme="light"] .btn.ghost:hover{color:#a3540a}
+:root[data-theme="light"] h1 .glow,:root[data-theme="light"] .big-num{background-image:linear-gradient(100deg,#f29a1f 0%,#ef6a2b 55%,#d63b3b 100%)}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) body{background-image:radial-gradient(1200px 600px at 85% -10%,rgba(255,122,61,.10),transparent 60%)}
+  :root:not([data-theme="dark"]) .nav{background:rgba(247,246,251,.8)}
+  :root:not([data-theme="dark"]) .lead{color:#3d3955}
+  :root:not([data-theme="dark"]) .rule p{color:#46425f}
+  :root:not([data-theme="dark"]) .hero-card{background:rgba(255,255,255,.78);box-shadow:0 30px 70px rgba(40,30,80,.12)}
+  :root:not([data-theme="dark"]) .gauge-track{background:rgba(22,18,48,.08)}
+  :root:not([data-theme="dark"]) .field input{background:#fff}
+  :root:not([data-theme="dark"]) a,:root:not([data-theme="dark"]) .link,:root:not([data-theme="dark"]) .go-cta,:root:not([data-theme="dark"]) .go-t em,
+  :root:not([data-theme="dark"]) .links a[aria-current="page"],:root:not([data-theme="dark"]) .btn.ghost:hover{color:#a3540a}
+  :root:not([data-theme="dark"]) h1 .glow,:root:not([data-theme="dark"]) .big-num{background-image:linear-gradient(100deg,#f29a1f 0%,#ef6a2b 55%,#d63b3b 100%)}
+}
+
+/* pulsante del tema */
+.theme{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:50%;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:pointer;transition:border-color .2s}
+.theme:hover{border-color:var(--sun)}
+.theme svg{width:18px;height:18px}
+.theme .i-sun{display:none}
+:root[data-theme="light"] .theme .i-sun{display:block}
+:root[data-theme="light"] .theme .i-moon{display:none}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .theme .i-sun{display:block}
+  :root:not([data-theme="dark"]) .theme .i-moon{display:none}
+}
+
+/* tempesta in home */
+.storm-btn{margin-top:14px;background:none;border:0;padding:0;color:var(--storm);font:600 13.5px var(--body);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.storm-btn[hidden]{display:none}
+.storm-note{font-size:13px;color:var(--muted);margin:14px 0 0}
+.storm-note:empty{display:none}
+.hero:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease;
+  background:radial-gradient(900px 520px at 0% 50%,rgba(255,79,109,.20),transparent 70%)}
+.hero.stormy:after{opacity:1}
+.hero.stormy .sun{animation:pulse 2.2s ease-in-out infinite;filter:blur(2px) saturate(1.25)}
+.hero.stormy .state{color:var(--storm)}
+:root[data-theme="light"] .eyebrow,:root[data-theme="light"] .kicker,:root[data-theme="light"] .go-k{color:#b86a00}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .eyebrow,:root:not([data-theme="dark"]) .kicker,:root:not([data-theme="dark"]) .go-k{color:#b86a00}}
+@media(max-width:480px){
+  .nav-in{gap:10px}
+  .net-pill{font-size:0;gap:0;padding:6px 9px}
+  .net-pill:after{content:"testnet";font:500 11px var(--mono);margin-left:6px}
+  .theme{width:34px;height:34px}
+}

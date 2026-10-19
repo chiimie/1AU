@@ -6,13 +6,14 @@
 <title>1AU Staking — sail on every calm day</title>
 <meta name="description" content="Stake 1AU on Base Sepolia and share 30% of every calm-day mint. How it works, rules and your position.">
 <meta name="theme-color" content="#07080f">
+<script>try{var t=localStorage.getItem("1au-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/style.css?v=3">
+<link rel="stylesheet" href="../assets/style.css?v=5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
-<script src="../assets/app.js?v=3" defer></script>
+<script src="../assets/app.js?v=5" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -36,6 +37,10 @@
       <a href="./" aria-current="page">Staking</a>
     </nav>
     <span class="net-pill"><i></i>Base Sepolia · testnet</span>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch between light and dark">
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+    </button>
   </div>
 </header>
 
@@ -68,14 +73,14 @@
         <ol class="steps">
           <li class="step"><b>Stake any amount</b><span>Your 1AU move into the staking part of the contract. They are never burned: storms only burn from the pool, never from stakers or wallets.</span></li>
           <li class="step"><b>Wait one full day</b><span>New stakes start earning at the <b>second</b> daily update after you join, so nobody can jump in a minute before 10:30 UTC and grab a day they did not sail.</span></li>
-          <li class="step"><b>Earn on every calm day</b><span>When the wind is at or below 600 km/s, the coin mints <b>0.035% of the supply × (wind ÷ 426)²</b> and <b>30%</b> of it is split among all earning stakers, by stake size. Faster wind, bigger day.</span></li>
-          <li class="step"><b>Storm days pay nothing</b><span>Above 600 km/s there is no mint, so no staking rewards that day. Instead, coins are burned from the pool, which pushes the price up.</span></li>
+          <li class="step"><b>Earn on calm days</b><span>Below 600 km/s the coin gives back part of what storms burned: the calmer the wind, the bigger the part (<b>1.17%</b> of what is owed at 426 km/s, <b>1.39%</b> at 300). <b>30%</b> of it is split among all earning stakers, by stake size.</span></li>
+          <li class="step"><b>Storms come first</b><span>Above 600 km/s nothing is given back that day: coins are burned from the pool, which pushes the price up, and what burns is what the next calm days return. Before the first storm nothing is owed, so there are no rewards yet.</span></li>
           <li class="step"><b>Claim when you like</b><span>Rewards pile up in the contract. Claim them at any time: they land in your wallet, where they also receive the holders' 10%.</span></li>
           <li class="step"><b>Leave at any time</b><span>"Ask to leave" stops your coins from earning at once. They unlock at the first daily update that comes at least <b>24 hours after your last stake</b> (the minimum is one day); then press Withdraw.</span></li>
         </ol>
         <div class="callout">
-          <b>The brake favours stakers.</b>
-          <span>If the supply grows more than 10% over 365 days (only possible with a very quiet Sun), holders stop receiving first. Stakers keep earning, on a share that fades to zero at 15%.</span>
+          <b>Nothing is created from nothing.</b>
+          <span>Everything paid to stakers comes from coins that storms burned earlier, so the supply never grows past where it started. If nobody is staking, the stakers' part simply waits.</span>
         </div>
         <p class="note">Next daily update in <b id="kNext">—</b> (10:30 UTC). Test network: the contract is a draft and has not been audited.</p>
       </div>

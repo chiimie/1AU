@@ -6,13 +6,14 @@
 <title>Solar Sail (1AU) — the coin that rides the solar wind</title>
 <meta name="description" content="Solar Sail (1AU) is a meme coin on Base that moves with the real solar wind. Calm days mint to the pool, stakers and holders; solar storms burn from the pool. Test network.">
 <meta name="theme-color" content="#07080f">
+<script>try{var t=localStorage.getItem("1au-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=3">
+<link rel="stylesheet" href="assets/style.css?v=5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
-<script src="assets/app.js?v=3" defer></script>
+<script src="assets/app.js?v=5" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -36,6 +37,10 @@
       <a href="staking/">Staking</a>
     </nav>
     <span class="net-pill"><i></i>Base Sepolia · testnet</span>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch between light and dark">
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+    </button>
   </div>
 </header>
 
@@ -49,7 +54,7 @@
       <div class="hero-copy">
         <p class="eyebrow">A meme coin powered by the Sun</p>
         <h1>Ride the<br><span class="glow">solar wind.</span></h1>
-        <p class="lead">Every day, spacecraft a million miles from Earth measure how fast the Sun is blowing. That one number decides what <b>1AU</b> does: calm days mint new coins, solar storms burn them from the pool.</p>
+        <p class="lead">Every day, spacecraft a million miles from Earth measure how fast the Sun is blowing. That one number decides what <b>1AU</b> does: solar storms burn coins from the pool, calm days give them back.</p>
         <div class="cta">
           <a class="btn primary" href="faucet/">Claim free 1AU</a>
           <a class="btn ghost" href="staking/">Hoist your sail: stake</a>
@@ -68,6 +73,8 @@
           <div><span>Today</span><b id="todayEffect">—</b></div>
           <div><span>Next reading</span><b id="countdown">—</b></div>
         </div>
+        <p class="storm-note" id="stormNote"></p>
+        <button class="storm-btn" id="stormBtn" type="button" aria-pressed="false">See what a solar storm looks like</button>
       </div>
     </div>
   </section>
@@ -86,7 +93,7 @@
         <div class="stat"><span>V2 pool</span><b id="sPool">—</b><small>1AU that storms burn from</small></div>
         <div class="stat"><span>Faucet today</span><b id="sFaucet">—</b><small>1AU per wallet, once a day</small></div>
         <div class="stat"><span>Staked</span><b id="sStaked">—</b><small>1AU earning the 30%</small></div>
-        <div class="stat"><span>Net growth, 365 days</span><b id="sGrowth">—</b><small>brake starts at 10%</small></div>
+        <div class="stat"><span>Owed back from storms</span><b id="sOwed">—</b><small>given back on calm days</small></div>
       </div>
       <div class="log card">
         <div class="log-head"><h3>Wind log</h3><span class="legend"><i class="l-calm"></i>mint day <i class="l-storm"></i>storm: burn</span></div>
@@ -101,14 +108,14 @@
     <div class="wrap">
       <div class="head">
         <p class="kicker">The rules</p>
-        <h2>Calm days mint. Storms burn.</h2>
-        <p class="sub">No team decides anything. The Sun does, once a day. Wallet balances never go down.</p>
+        <h2>Storms burn. Calm days give back.</h2>
+        <p class="sub">No team decides anything. The Sun does, once a day. 600 km/s is the line: the further the wind goes from it, the more happens, but each extra 100 km/s counts less than the one before. Wallet balances never go down.</p>
       </div>
       <div class="rules">
         <article class="rule calm">
           <div class="r-ico" aria-hidden="true">☼</div>
-          <h3>Up to 600 km/s: mint</h3>
-          <p>New coins: <b>0.035% of the supply × (wind ÷ 426)²</b>. A calm 300 km/s day mints half the usual, a fast 600 km/s day almost double.</p>
+          <h3>Below 600 km/s: give back</h3>
+          <p>Calm days return what storms burned. The calmer the wind, the bigger the share that day: <b>0.6%</b> of what is owed at 550 km/s, <b>1.17%</b> at 426, <b>1.39%</b> at 300. On average a storm comes back within about 90 days.</p>
           <div class="split">
             <div style="--w:60%"><b>60%</b><span>V2 pool</span></div>
             <div style="--w:30%"><b>30%</b><span>stakers</span></div>
@@ -118,14 +125,13 @@
         <article class="rule storm">
           <div class="r-ico" aria-hidden="true">⚡</div>
           <h3>Above 600 km/s: storm</h3>
-          <p>No mint. Coins are burned <b>straight from the V2 pool</b>: 0.5% as soon as the wind passes 600 km/s, plus 0.1% for every 10 km/s more, up to <b>3%</b> from 850 km/s. Fewer coins in the pool, same ETH: the price goes up.</p>
-          <ul class="mini"><li><span>650 km/s</span><b>1.0%</b></li><li><span>700 km/s</span><b>1.5%</b></li><li><span>800 km/s</span><b>2.5%</b></li><li><span>850+ km/s</span><b>3.0%</b></li></ul>
+          <p>No mint. Coins are burned <b>straight from the V2 pool</b>, more the stronger the storm, but each extra 100 km/s adds less: never more than <b>3.6%</b>. Fewer coins in the pool, same ETH: the price goes up.</p>
+          <ul class="mini"><li><span>650 km/s</span><b>1.12%</b></li><li><span>700 km/s</span><b>1.71%</b></li><li><span>800 km/s</span><b>2.32%</b></li><li><span>900 km/s</span><b>2.63%</b></li></ul>
         </article>
         <article class="rule brake">
           <div class="r-ico" aria-hidden="true">◐</div>
-          <h3>The brake</h3>
-          <p>The coin watches its <b>net growth over the last 365 days</b> (minted minus burned). Below 10% everything is normal. From 10% to 15% holders stop receiving and the pool and staking shares fade to zero. Storms make room again.</p>
-          <div class="brake-bar"><i></i><span class="b1">0%</span><span class="b2">10%</span><span class="b3">15%</span></div>
+          <h3>What burns comes back</h3>
+          <p>The coin keeps one number from the day it was published: coins burned minus coins given back. Calm days only return part of it, never more, so the supply can never grow past the 149,597,870,700 it started with. Until the first storm there is nothing to give back.</p>
         </article>
       </div>
       <div class="facts">
@@ -151,7 +157,7 @@
           <output id="simOut">426 km/s</output>
         </div>
         <input type="range" id="simWind" min="250" max="1000" step="5" value="426">
-        <div class="sim-ticks" aria-hidden="true"><span>250 calm</span><span>426 typical</span><span>600 storm</span><span>1000</span></div>
+        <div class="sim-ticks" aria-hidden="true"><span>250 calm</span><span>426 typical</span><span>600 the line</span><span>1000</span></div>
         <div class="sim-res" id="simRes"></div>
       </div>
     </div>
@@ -230,6 +236,7 @@
         <details><summary>Can storms be predicted?</summary><p>Partly. The Sun rotates about every 27 days, so some fast wind streams come back, and space-weather forecasters announce storms a few days ahead. The coin cannot be front-run on the day itself, because the wind is published and applied in the same transaction.</p></details>
         <details><summary>What if the data stops?</summary><p>If no new reading arrives, nothing happens: no mint, no burn. A reading older than 2 days is ignored. Anyone can run the daily update, so the coin does not depend on one server.</p></details>
         <details><summary>Single source?</summary><p>Yes: the solar wind comes from NOAA SWPC, one agency. The four operators make sure nobody can change the number on its way to the chain, not that the source is right.</p></details>
+        <details><summary>Why is nothing minted yet?</summary><p>Calm days only give back what storms burned, counted from the day the coin was published. Until the first storm above 600 km/s nothing is owed, so nothing is minted.</p></details>
         <details><summary>Will my balance ever shrink?</summary><p>No. Storms burn only from the V2 pool. Holders and stakers can only receive.</p></details>
       </div>
     </div>

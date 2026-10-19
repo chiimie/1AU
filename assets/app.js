@@ -8,12 +8,12 @@
     chainHex: '0x14a34',
     rpcs: ['https://base-sepolia-rpc.publicnode.com', 'https://sepolia.base.org'],
     explorer: 'https://sepolia.basescan.org',
-    coin: '0x96bDE263a3745b5F3559265BC62CfeC7e9EBBC08',
-    helper: '0xAB1De50B7c0B4a2910fc7Bd7c0957fB3ACEFFD3f',
+    coin: '0x8b297faf7Dd374E2aB97e352E0dfF76bFEc2A057',
+    helper: '0x42987FecE61dd1BC922d2C012F9315fA38c274a0',
     adapter: '0x30F9ae10eB9F489Fe319c7aa7f501B096B1437Ab',
     hub: '0xAe615eD3D342072Cc1Abd249aD87d6415079F51A',
-    poolV2: '0x08830B494A66b6212917Cdc1303b85781d906B22',
-    poolV3: '0x93EF74df387675Ecc8126b39FA39dD66df8bdca2',
+    poolV2: '0xd5D8D3a58bF9B677ee332DAe917E9817CF7e657F',
+    poolV3: '0x4598349e86B082625C5426C9Aa8653EBF1831454',
     airdrop: '0x0099f69fFe4A5d8950D24e452baDA49740bCf9df',
     logRounds: 21,
     faucetMinEth: 500000000000000n,
@@ -24,7 +24,8 @@
     'function totalSupply() view returns (uint256)', 'function balanceOf(address) view returns (uint256)',
     'function faucetAmount() view returns (uint256)', 'function faucetBalance() view returns (uint256)',
     'function stakingTotal() view returns (uint256)', 'function totalActive() view returns (uint256)',
-    'function pendingNext() view returns (uint256)', 'function netWindow() view returns (int256)',
+    'function pendingNext() view returns (uint256)', 'function owed() view returns (uint256)',
+    'function totalBurned() view returns (uint256)', 'function totalMinted() view returns (uint256)',
     'function lastUpdate() view returns (uint256)', 'function lastClaimEpoch(address) view returns (uint256)',
     'function claimsEpoch() view returns (uint256)', 'function claimsCount() view returns (uint256)',
     'function stakers(address) view returns (uint256 active, uint256 pending, uint256 leaving, uint256 debt, uint256 earned, uint64 pendingEpoch, uint64 leaveEpoch, uint64 stakeTime)',
@@ -36,7 +37,7 @@
     'function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)',
     'function getRoundData(uint80) view returns (uint80, int256, uint256, uint256, uint80)'
   ];
-  var S = { speed: 0, supply: 0n, pool: 0n, growth: 0, active: 0n, staked: 0n, epoch: 0n, lastUpdate: 0 };
+  var S = { speed: 0, supply: 0n, pool: 0n, owed: 0n, active: 0n, staked: 0n, epoch: 0n, lastUpdate: 0 };
 
   var $ = function (id) { return document.getElementById(id); };
   var has = function (id) { return !!$(id); };
@@ -48,15 +49,18 @@
   function on(id, ev, fn) { var e = $(id); if (e) e.addEventListener(ev, fn); }
 
   /* ---------------- regole (come nel contratto) ---------------- */
-  function plan(speedKms, supply, pool, growth, active) {
-    var sp = Math.min(speedKms, 2000), s = tok(supply), p = tok(pool), base = s * 0.00035;
+  /* tempesta (oltre 600): burn = 3,6% x d / (d + 110) del pool V2;
+     calma (sotto 600): si restituisce il debito (bruciati - coniati dal lancio): debito x [d / (d + 100)] / (0,601 x 90),
+     diviso 60% pool, 30% staking, 10% detentori dopo il premio dello 0,5%. A 600 esatti non succede nulla. */
+  function plan(speedKms, pool, owed, active) {
+    var sp = Math.min(speedKms, 2000), p = tok(pool), o = tok(owed);
     if (sp > 600) {
-      var rate = Math.min(0.03, 0.005 + Math.floor(sp - 600) / 10000);
-      return { storm: true, rate: rate, burn: p * rate, bounty: base * 0.005 };
+      var x = sp - 600, rate = 0.036 * x / (x + 110);
+      return { storm: true, rate: rate, burn: p * rate, bounty: p * rate * 0.005 };
     }
-    var m = base * (sp / 426) * (sp / 426), f = 1, holders = m * 0.1;
-    if (growth >= 0.15) { f = 0; holders = 0; } else if (growth >= 0.10) { f = (0.15 - growth) / 0.05; holders = 0; }
-    return { storm: false, mint: m, pool: m * 0.6 * f, staking: m * 0.3 * f, holders: holders, stakedNow: active > 0n, bounty: base * 0.005, brake: f < 1 };
+    var y = 600 - sp, m = Math.min(o, o * (y / (y + 100)) / (0.601 * 90)), rest = m * 0.995;
+    return { storm: false, mint: m, share: o > 0 ? m / o : 0, pool: rest * 0.6, staking: active > 0n ? rest * 0.3 : 0,
+             stakingIf: rest * 0.3, holders: rest * 0.1, bounty: m * 0.005, owed: o, stakedNow: active > 0n };
   }
   function stateOf(kms) { return kms > 600 ? 'storm' : kms >= 426 ? 'breeze' : 'calm'; }
 
@@ -77,19 +81,19 @@
   async function loadState() {
     var r = await withRetry(function () {
       return Promise.all([coin.epoch(), coin.speed(), coin.totalSupply(), coin.balanceOf(CFG.poolV2), coin.faucetAmount(),
-        coin.stakingTotal(), coin.totalActive(), coin.netWindow(), coin.lastUpdate(), coin.pendingNext(),
+        coin.stakingTotal(), coin.totalActive(), coin.owed(), coin.lastUpdate(), coin.pendingNext(),
         coin.claimsEpoch(), coin.claimsCount(), coin.faucetBalance()]);
     });
     S.epoch = r[0]; S.speed = Number(r[1]) / 10; S.supply = r[2]; S.pool = r[3];
     S.staked = r[5]; S.active = r[6]; S.lastUpdate = Number(r[8]); S.joining = r[9];
-    S.growth = r[7] > 0n ? Number(r[7]) / Number(r[2]) : 0;
+    S.owed = r[7];
     S.claimsToday = r[10] === r[0] ? r[11] : 0n;
 
     setText('speed', S.speed.toFixed(1));
     var st = stateOf(S.speed), el = $('state');
     if (el) { el.className = 'state ' + st; el.textContent = st === 'storm' ? 'Solar storm' : st === 'breeze' ? 'Fresh breeze' : 'Calm'; }
     if (has('gaugeFill')) $('gaugeFill').style.width = Math.max(2, Math.min(100, (S.speed - 250) / 7)) + '%';
-    windFactor = Math.max(0.4, S.speed / 426);
+    realStorm = S.speed > 600; applyWind();
     setText('sDay', String(S.epoch));
     setText('sSupply', fmt(tok(S.supply)), whole.format(tok(S.supply)) + ' 1AU');
     setText('sPool', fmt(tok(S.pool)), whole.format(tok(S.pool)) + ' 1AU');
@@ -97,12 +101,12 @@
     setText('fAmt', whole.format(tok(r[4])));
     setText('sFaucetGo', whole.format(tok(r[4])));
     setText('sStaked', fmt(tok(S.staked)));
-    setText('sGrowth', (S.growth * 100).toFixed(2) + '%');
+    setText('sOwed', fmt(tok(S.owed)) + ' 1AU', whole.format(tok(S.owed)) + ' 1AU');
     setText('fSpeed', S.speed.toFixed(1) + ' km/s');
     setText('fClaims', String(S.claimsToday) + ' / 800');
     setText('fLeft', fmt(tok(r[12])) + ' 1AU');
-    var p = plan(S.speed, S.supply, S.pool, S.growth, S.active);
-    setText('todayEffect', p.storm ? 'Storm: burn ' + (p.rate * 100).toFixed(1) + '% of pool' : 'Mint ' + fmt(p.mint) + ' 1AU');
+    var p = plan(S.speed, S.pool, S.owed, S.active);
+    setText('todayEffect', p.storm ? 'Storm: burn ' + (p.rate * 100).toFixed(2) + '% of pool' : p.mint > 0 ? 'Give back ' + fmt(p.mint) + ' 1AU' : 'Calm, nothing owed yet');
     stakingStats();
     simulate();
   }
@@ -112,9 +116,12 @@
     if (!has('kActive')) return;
     setText('kActive', fmt(tok(S.active)) + ' 1AU');
     setText('kJoining', fmt(tok(S.joining || 0n)) + ' 1AU');
-    var typical = plan(426, S.supply, S.pool, S.growth, 1n);
-    setText('kDaily', fmt(typical.staking) + ' 1AU');
-    if (S.active > 0n) {
+    var typical = plan(426, S.pool, S.owed, 1n);
+    setText('kDaily', S.owed > 0n ? fmt(typical.staking) + ' 1AU' : 'None yet');
+    if (S.owed === 0n) {
+      setText('kPer', 'After the first storm');
+      setText('kPerNote', 'nothing has been burned yet, so nothing is owed back');
+    } else if (S.active > 0n) {
       var perMillion = typical.staking / tok(S.active) * 1e6;
       setText('kPer', whole.format(perMillion) + ' 1AU');
       setText('kPerNote', 'per 1,000,000 staked, on a typical 426 km/s day');
@@ -139,11 +146,10 @@
     rows.forEach(function (r) {
       var b = document.createElement('div');
       b.className = 'bar ' + (r.v > 600 ? 'storm' : 'calm');
-      b.style.height = '0%';
+      b.style.height = (r.v / max * 100) + '%';
       b.title = new Date(r.t * 1000).toUTCString() + ' — ' + r.v.toFixed(1) + ' km/s';
       var s = document.createElement('span'); s.textContent = Math.round(r.v); b.appendChild(s);
       box.appendChild(b);
-      requestAnimationFrame(function () { b.style.height = (r.v / max * 100) + '%'; });
     });
     setText('logNote', rows.length + ' reading' + (rows.length === 1 ? '' : 's') + ' of SOLAR_WIND on Base so far. One bar per published round; the dashed line is the storm threshold.');
   }
@@ -165,20 +171,27 @@
     var v = Number($('simWind').value);
     $('simOut').textContent = v + ' km/s';
     if (!S.supply) return;
-    var p = plan(v, S.supply, S.pool, S.growth, S.active), out = $('simRes'), cells;
+    var p = plan(v, S.pool, S.owed, S.active), out = $('simRes'), cells;
     if (p.storm) {
       cells = [
         ['Day type', 'Solar storm', 'no mint today', 'hl storm'],
-        ['Burned from the V2 pool', fmt(p.burn) + ' 1AU', (p.rate * 100).toFixed(1) + '% of the pool', 'hl storm'],
-        ['Pool price', '+' + ((1 / (1 - p.rate) - 1) * 100).toFixed(1) + '%', 'same ETH, fewer coins', ''],
-        ['Your balance', 'unchanged', 'wallets never burn', '']
+        ['Burned from the V2 pool', fmt(p.burn) + ' 1AU', (p.rate * 100).toFixed(2) + '% of the pool', 'hl storm'],
+        ['Pool price', '+' + ((1 / (1 - p.rate) - 1) * 100).toFixed(2) + '%', 'same ETH, fewer coins', ''],
+        ['Owed back afterwards', fmt(p.owed + p.burn * 0.995) + ' 1AU', 'returned on calm days', '']
+      ];
+    } else if (p.owed === 0) {
+      cells = [
+        ['Day type', v === 600 ? 'Neutral' : 'Calm', 'no storm has burned anything yet', 'hl'],
+        ['Given back', '0 1AU', 'nothing is owed', ''],
+        ['Your balance', 'unchanged', 'wallets never burn', ''],
+        ['Try', 'above 600 km/s', 'to see a storm', '']
       ];
     } else {
       cells = [
-        ['Minted today', fmt(p.pool + (p.stakedNow ? p.staking : 0) + p.holders) + ' 1AU', p.brake ? 'brake active: mint reduced' : '0.035% × (wind ÷ 426)²', 'hl'],
+        ['Given back today', fmt(p.mint) + ' 1AU', (p.share * 100).toFixed(2) + '% of what is owed', 'hl'],
         ['To the V2 pool (60%)', fmt(p.pool) + ' 1AU', 'deepens the pool', ''],
-        ['To stakers (30%)', fmt(p.staking) + ' 1AU', p.stakedNow ? 'split by stake' : 'only minted when someone stakes', ''],
-        ['To holders (10%)', fmt(p.holders) + ' 1AU', p.brake ? 'paused by the brake' : 'every wallet grows', '']
+        ['To stakers (30%)', fmt(p.stakingIf) + ' 1AU', p.stakedNow ? 'split by stake' : 'only when someone stakes', ''],
+        ['To holders (10%)', fmt(p.holders) + ' 1AU', 'every wallet grows', '']
       ];
     }
     out.textContent = '';
@@ -335,12 +348,34 @@
     }
   }
 
-  /* ---------------- vento solare (animazione) ---------------- */
-  var windFactor = 1;
+  /* ---------------- vento solare (animazione) ----------------
+     Calma: strisce dorate che vanno alla velocita' del vento reale.
+     Tempesta (vera, o mostrata col pulsante): brillamento sul bordo del Sole, una nube di plasma (espulsione di massa
+     coronale) che parte dal Sole e attraversa lo schermo gonfiandosi, con il fronte sfrangiato, e particelle rosse veloci. */
+  var windFactor = 1, realStorm = false, preview = false, stormOn = false;
+  function applyWind() {
+    stormOn = realStorm || preview;
+    windFactor = stormOn ? Math.max(760, S.speed || 0) / 426 : Math.max(0.4, (S.speed || 426) / 426);
+    var hero = document.querySelector('.hero'); if (hero) hero.classList.toggle('stormy', stormOn);
+    var b = $('stormBtn');
+    if (b) {
+      b.hidden = realStorm;
+      b.textContent = preview ? 'Back to today\'s wind' : 'See what a solar storm looks like';
+      b.setAttribute('aria-pressed', preview ? 'true' : 'false');
+    }
+    setText('stormNote', realStorm ? 'A solar storm is blowing right now: the Sun has thrown out a cloud of plasma and the coin burns from the pool.'
+      : preview ? 'Example at 760 km/s: a flare on the Sun and a cloud of plasma racing towards Earth.' : '');
+  }
+  function isLight() {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (t) return t === 'light';
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+  }
   function windCanvas() {
     var c = $('wind'); if (!c) return;
     var ctx = c.getContext('2d'), parts = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var cme = null, nextCme = 0, flare = 0, clock = 0;
     function size() {
       W = c.clientWidth; H = c.clientHeight; c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       var n = Math.round(Math.min(320, W * H / 4200));
@@ -353,21 +388,70 @@
       p.w = Math.random() < 0.18 ? 1.8 : 1; p.drift = (Math.random() - 0.5) * 0.12;
       return p;
     }
+    /* nube di plasma: un guscio di filamenti che si allarga dal centro del Sole (a sinistra, a meta' altezza) */
+    function newCme() {
+      var fil = [];
+      for (var i = 0; i < 150; i++) fil.push({ a: (Math.random() - 0.5) * 1.5, d: Math.random(), w: 0.6 + Math.random() * 2.2,
+        k: Math.random() * 6.28, len: 0.04 + Math.random() * 0.12 });
+      return { r: Math.max(240, W * 0.12), fil: fil, born: clock };
+    }
+    function drawSunFlare(sx, sy, power) {
+      if (power <= 0) return;
+      var R = 70 + 90 * power, g = ctx.createRadialGradient(sx, sy, 0, sx, sy, R);
+      g.addColorStop(0, 'rgba(255,255,255,' + (0.95 * power) + ')');
+      g.addColorStop(0.35, 'rgba(255,236,170,' + (0.7 * power) + ')');
+      g.addColorStop(1, 'rgba(255,120,60,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, R, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,248,220,' + (0.8 * power) + ')'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(sx + 18, sy - 6, 26 + 16 * (1 - power), Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    }
+    function drawCme(o, light) {
+      var cx = 0, cy = H * 0.5, life = (clock - o.born) / 6000;
+      if (life > 1) return false;
+      o.r = Math.max(240, W * 0.12) + life * (W + 260);
+      var fade = life < 0.08 ? life / 0.08 : life > 0.8 ? (1 - life) / 0.2 : 1;
+      // alone diffuso dietro il fronte
+      var halo = ctx.createRadialGradient(cx, cy, o.r * 0.55, cx, cy, o.r * 1.04);
+      halo.addColorStop(0, 'rgba(255,170,90,0)');
+      halo.addColorStop(0.75, (light ? 'rgba(255,140,60,' : 'rgba(255,190,110,') + (0.16 * fade) + ')');
+      halo.addColorStop(1, 'rgba(229,48,74,0)');
+      ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, o.r * 1.04, -0.85, 0.85); ctx.lineTo(cx, cy); ctx.fill();
+      // filamenti del fronte, sfrangiati e turbolenti
+      for (var i = 0; i < o.fil.length; i++) {
+        var f = o.fil[i], ang = f.a + Math.sin(clock / 700 + f.k) * 0.02;
+        var rr = o.r * (0.9 + 0.1 * f.d) + Math.sin(f.k + clock / 300 + f.a * 9) * 12;
+        var x1 = cx + Math.cos(ang) * rr, y1 = cy + Math.sin(ang) * rr * 1.15;
+        var x0 = cx + Math.cos(ang) * rr * (1 - f.len), y0 = cy + Math.sin(ang) * rr * (1 - f.len) * 1.15;
+        var hot = f.d > 0.55;
+        var g = ctx.createLinearGradient(x0, y0, x1, y1);
+        g.addColorStop(0, 'rgba(255,220,160,0)');
+        g.addColorStop(0.7, (hot ? (light ? 'rgba(255,120,40,' : 'rgba(255,250,235,') : 'rgba(255,160,80,') + (0.85 * fade) + ')');
+        g.addColorStop(1, 'rgba(229,48,74,' + (0.7 * fade) + ')');
+        ctx.strokeStyle = g; ctx.lineWidth = f.w;
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo((x0 + x1) / 2 + Math.sin(f.k + clock / 250) * 6, (y0 + y1) / 2, x1, y1); ctx.stroke();
+      }
+      return true;
+    }
     var running = true, last = 0;
     function frame(t) {
       if (!running) return;
-      var dt = Math.min(48, t - last || 16) / 16; last = t;
+      var dt = Math.min(48, t - last || 16) / 16; last = t; clock += dt * 16;
       ctx.clearRect(0, 0, W, H);
-      var storm = windFactor > 600 / 426;
+      var light = isLight();
+      if (stormOn) {
+        if (!cme && clock >= nextCme) { cme = newCme(); flare = 1; nextCme = clock + 6600; }
+        if (cme && !drawCme(cme, light)) cme = null;
+        if (flare > 0) { drawSunFlare(Math.min(250, W * 0.18), H * 0.5, flare); flare = Math.max(0, flare - 0.012 * dt); }
+      } else { cme = null; flare = 0; nextCme = clock + 400; }
       for (var i = 0; i < parts.length; i++) {
-        var p = parts[i];
-        p.x += p.v * windFactor * 2.2 * dt; p.y += p.drift * dt;
+        var p = parts[i], f = windFactor;
+        p.x += p.v * f * 2.2 * dt; p.y += p.drift * dt + (stormOn ? Math.sin(clock / 400 + p.v * 9) * 0.25 : 0);
         if (p.x - p.len > W) seed(p, false);
-        var g = ctx.createLinearGradient(p.x - p.len * windFactor, p.y, p.x, p.y);
+        var g = ctx.createLinearGradient(p.x - p.len * f, p.y, p.x, p.y);
         g.addColorStop(0, 'rgba(255,200,120,0)');
-        g.addColorStop(1, storm ? 'rgba(255,120,140,' + p.a + ')' : 'rgba(255,214,150,' + p.a + ')');
+        g.addColorStop(1, stormOn ? 'rgba(255,' + (light ? 70 : 110) + ',120,' + p.a + ')' : light ? 'rgba(214,128,20,' + p.a + ')' : 'rgba(255,214,150,' + p.a + ')');
         ctx.strokeStyle = g; ctx.lineWidth = p.w;
-        ctx.beginPath(); ctx.moveTo(p.x - p.len * windFactor, p.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p.x - p.len * f, p.y); ctx.lineTo(p.x, p.y); ctx.stroke();
       }
       requestAnimationFrame(frame);
     }
@@ -381,6 +465,23 @@
     requestAnimationFrame(frame);
   }
 
+  /* ---------------- tema chiaro / scuro ---------------- */
+  function theme() {
+    var b = $('themeBtn'); if (!b) return;
+    function label() { b.setAttribute('aria-label', isLight() ? 'Switch to dark' : 'Switch to light'); }
+    b.addEventListener('click', function () {
+      var next = isLight() ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('1au-theme', next); } catch (e) {}
+      label();
+    });
+    label();
+  }
+  function stormButton() {
+    var b = $('stormBtn'); if (!b) return;
+    b.addEventListener('click', function () { preview = !preview; applyWind(); });
+  }
+
   function reveal() {
     if (!('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: .08 });
@@ -389,7 +490,7 @@
 
   /* ---------------- avvio ---------------- */
   document.addEventListener('DOMContentLoaded', function () {
-    windCanvas(); tick(); setInterval(tick, 30000); addresses(); reveal();
+    windCanvas(); tick(); setInterval(tick, 30000); addresses(); reveal(); theme(); stormButton();
     on('simWind', 'input', simulate);
     if (!window.ethers) { setText('state', 'offline'); return; }
     connectRead(); bindWallet();
