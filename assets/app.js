@@ -499,3 +499,17 @@
     setInterval(function () { loadState().catch(function () {}); if (account) refreshUser().catch(function () {}); }, 60000);
   });
 })();
+
+/* il Sole segue lo scroll: resta dietro la pagina, dopo la prima schermata si sposta un po' a sinistra e si attenua, cosi' i testi restano leggibili */
+(function(){
+  var sun=document.querySelector('.sun'); if(!sun) return;
+  var still=window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, ticking=false;
+  function place(){
+    ticking=false;
+    var max=Math.max(1, document.documentElement.scrollHeight-innerHeight), p=Math.min(1, scrollY/max), first=Math.min(1, scrollY/innerHeight);
+    if(!still){ sun.style.setProperty('--sun-x', Math.round(-first*140-p*40)+'px'); sun.style.setProperty('--sun-y', Math.round(-p*140)+'px'); }
+    sun.style.setProperty('--sun-o', (1-first*0.6).toFixed(3));
+  }
+  addEventListener('scroll',function(){ if(!ticking){ ticking=true; requestAnimationFrame(place); } },{passive:true});
+  addEventListener('resize',place); place();
+})();
