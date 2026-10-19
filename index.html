@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solar Sail (1AU) — the coin that rides the solar wind</title>
+<meta name="description" content="Solar Sail (1AU) is a meme coin on Base that moves with the real solar wind. Calm days mint to the pool, stakers and holders; solar storms burn from the pool. Test network.">
+<meta name="theme-color" content="#07080f">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=2">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
+<script src="assets/app.js?v=2" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Solar Sail home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#ff7a3d"/></linearGradient></defs>
+        <path d="M8 34 L20 4 L32 34 Q20 27 8 34Z" fill="url(#bm)"/>
+        <path d="M20 4 L20 30" stroke="#07080f" stroke-width="1.6" opacity=".55"/>
+      </svg>
+      <span>Solar Sail</span><em>1AU</em>
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="#today">Today</a>
+      <a href="#how">How it works</a>
+      <a href="#simulator">Simulator</a>
+      <a href="#tokenomics">Tokenomics</a>
+      <a href="#sail">Stake &amp; faucet</a>
+    </nav>
+    <span class="net-pill"><i></i>Base Sepolia · testnet</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <canvas id="wind" aria-hidden="true"></canvas>
+    <div class="sun" aria-hidden="true"></div>
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <p class="eyebrow">A meme coin powered by the Sun</p>
+        <h1>Ride the<br><span class="glow">solar wind.</span></h1>
+        <p class="lead">Every day, spacecraft a million miles from Earth measure how fast the Sun is blowing. That one number decides what <b>1AU</b> does: calm days mint new coins, solar storms burn them from the pool.</p>
+        <div class="cta">
+          <a class="btn primary" href="#sail">Hoist your sail</a>
+          <a class="btn ghost" href="#how">How it works</a>
+        </div>
+      </div>
+
+      <div class="hero-card" aria-live="polite">
+        <div class="hc-top"><span>Solar wind</span><span class="state" id="state">reading…</span></div>
+        <div class="speed"><b id="speed">———</b><small>km/s</small></div>
+        <p class="hc-sub">24-hour mean · NOAA spacecraft at L1 · signed by 4 Opsikom operators</p>
+        <div class="gauge" aria-hidden="true">
+          <div class="gauge-track"><i class="gauge-fill" id="gaugeFill"></i><i class="gauge-storm"></i></div>
+          <div class="gauge-scale"><span>250</span><span>426</span><span class="st">600 storm</span><span>950</span></div>
+        </div>
+        <div class="hc-row">
+          <div><span>Today</span><b id="todayEffect">—</b></div>
+          <div><span>Next reading</span><b id="countdown">—</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TODAY ============ -->
+  <section class="section" id="today">
+    <div class="wrap">
+      <div class="head">
+        <p class="kicker">Live from Base</p>
+        <h2>Today in the solar wind.</h2>
+        <p class="sub">Everything below is read straight from the blockchain. A new reading arrives every day at 10:30 UTC, and the coin updates in the same transaction.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Coin day</span><b id="sDay">—</b><small>daily updates so far</small></div>
+        <div class="stat"><span>Supply</span><b id="sSupply">—</b><small>1AU in existence</small></div>
+        <div class="stat"><span>V2 pool</span><b id="sPool">—</b><small>1AU that storms burn from</small></div>
+        <div class="stat"><span>Faucet today</span><b id="sFaucet">—</b><small>1AU per wallet, once a day</small></div>
+        <div class="stat"><span>Staked</span><b id="sStaked">—</b><small>1AU earning the 30%</small></div>
+        <div class="stat"><span>Net growth, 365 days</span><b id="sGrowth">—</b><small>brake starts at 10%</small></div>
+      </div>
+      <div class="log card">
+        <div class="log-head"><h3>Wind log</h3><span class="legend"><i class="l-calm"></i>mint day <i class="l-storm"></i>storm: burn</span></div>
+        <div class="bars" id="bars" aria-label="Solar wind of recent days"></div>
+        <p class="note" id="logNote">Loading readings…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW ============ -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="head">
+        <p class="kicker">The rules</p>
+        <h2>Calm days mint. Storms burn.</h2>
+        <p class="sub">No team decides anything. The Sun does, once a day. Wallet balances never go down.</p>
+      </div>
+      <div class="rules">
+        <article class="rule calm">
+          <div class="r-ico" aria-hidden="true">☼</div>
+          <h3>Up to 600 km/s: mint</h3>
+          <p>New coins: <b>0.035% of the supply × (wind ÷ 426)²</b>. A calm 300 km/s day mints half the usual, a fast 600 km/s day almost double.</p>
+          <div class="split">
+            <div style="--w:60%"><b>60%</b><span>V2 pool</span></div>
+            <div style="--w:30%"><b>30%</b><span>stakers</span></div>
+            <div style="--w:10%"><b>10%</b><span>holders</span></div>
+          </div>
+        </article>
+        <article class="rule storm">
+          <div class="r-ico" aria-hidden="true">⚡</div>
+          <h3>Above 600 km/s: storm</h3>
+          <p>No mint. Coins are burned <b>straight from the V2 pool</b>: 0.5% at 600 km/s, plus 0.1% for every 10 km/s more, up to <b>3%</b> at 850 km/s. Fewer coins in the pool, same ETH: the price goes up.</p>
+          <ul class="mini"><li><span>650 km/s</span><b>1.0%</b></li><li><span>700 km/s</span><b>1.5%</b></li><li><span>800 km/s</span><b>2.5%</b></li><li><span>850+ km/s</span><b>3.0%</b></li></ul>
+        </article>
+        <article class="rule brake">
+          <div class="r-ico" aria-hidden="true">◐</div>
+          <h3>The brake</h3>
+          <p>The coin watches its <b>net growth over the last 365 days</b> (minted minus burned). Below 10% everything is normal. From 10% to 15% holders stop receiving and the pool and staking shares fade to zero. Storms make room again.</p>
+          <div class="brake-bar"><i></i><span class="b1">0%</span><span class="b2">10%</span><span class="b3">15%</span></div>
+        </article>
+      </div>
+      <div class="facts">
+        <div><b>No trading fees</b><span>Buy and sell freely.</span></div>
+        <div><b>No front-running storms</b><span>The wind is published and applied in one transaction.</span></div>
+        <div><b>Anyone can update</b><span>The daily update is public and pays a small reward.</span></div>
+        <div><b>Feed locked behind a 3-of-5 multisig</b><span>And a 7-day delay to change it.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SIMULATOR ============ -->
+  <section class="section" id="simulator">
+    <div class="wrap">
+      <div class="head">
+        <p class="kicker">Try the wind</p>
+        <h2>What would tomorrow do?</h2>
+        <p class="sub">Move the slider. The numbers use today's real supply and pool.</p>
+      </div>
+      <div class="sim card">
+        <div class="sim-top">
+          <label for="simWind">Solar wind</label>
+          <output id="simOut">426 km/s</output>
+        </div>
+        <input type="range" id="simWind" min="250" max="1000" step="5" value="426">
+        <div class="sim-ticks" aria-hidden="true"><span>250 calm</span><span>426 typical</span><span>600 storm</span><span>1000</span></div>
+        <div class="sim-res" id="simRes"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOKENOMICS ============ -->
+  <section class="section" id="tokenomics">
+    <div class="wrap tok">
+      <div class="tok-copy">
+        <p class="kicker">Tokenomics</p>
+        <h2>One astronomical unit.</h2>
+        <p class="big-num">149,597,870,700</p>
+        <p class="sub">The supply is the distance from the Earth to the Sun, in metres: the journey the solar wind makes to reach us. One coin per metre. No team allocation, no presale.</p>
+      </div>
+      <div class="alloc card">
+        <div class="alloc-bar" aria-hidden="true"><i style="--w:56%" class="a1"></i><i style="--w:14%" class="a2"></i><i style="--w:20%" class="a3"></i><i style="--w:10%" class="a4"></i></div>
+        <ul>
+          <li><i class="a1"></i><span>Uniswap V2 pool</span><b>56%</b><em>83,774,807,592</em></li>
+          <li><i class="a2"></i><span>Uniswap V3 pool</span><b>14%</b><em>20,943,701,898</em></li>
+          <li><i class="a3"></i><span>Faucet</span><b>20%</b><em>29,919,574,140</em></li>
+          <li><i class="a4"></i><span>Airdrop</span><b>10%</b><em>14,959,787,070</em></li>
+        </ul>
+        <p class="note">Liquidity is locked forever: the LP tokens and the V3 position were sent to the dead address. The V3 pool is never minted into or burned from.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STAKE & FAUCET ============ -->
+  <section class="section" id="sail">
+    <div class="wrap">
+      <div class="head">
+        <p class="kicker">Hoist your sail</p>
+        <h2>Faucet and staking.</h2>
+        <p class="sub">Claim free 1AU every day, then stake it to catch 30% of every calm-day mint. Test network only: you need a little Base Sepolia ETH for gas.</p>
+      </div>
+      <div class="dapp">
+        <div class="card wallet">
+          <div class="w-top">
+            <div><span class="label">Your wallet</span><b id="wAddr">Not connected</b></div>
+            <button class="btn primary sm" id="connect" type="button">Connect wallet</button>
+          </div>
+          <div class="w-grid">
+            <div><span>1AU</span><b id="wBal">—</b></div>
+            <div><span>ETH (Base Sepolia)</span><b id="wEth">—</b></div>
+            <div><span>Staking</span><b id="wStake">—</b></div>
+            <div><span>Rewards ready</span><b id="wRew">—</b></div>
+          </div>
+          <button class="link" id="addToken" type="button">Add 1AU to your wallet</button>
+          <p class="msg" id="wMsg" role="status"></p>
+        </div>
+
+        <div class="card action faucet">
+          <h3>Faucet</h3>
+          <p>Once a day per wallet, after the 10:30 UTC update. The amount follows the wind: <b>50,000 × wind ÷ 426</b>.</p>
+          <div class="f-amount"><b id="fAmt">—</b><span>1AU today</span></div>
+          <button class="btn primary" id="claimFaucet" type="button" disabled>Claim</button>
+          <p class="hint">Needs at least 0.0005 ETH in the wallet. Up to 800 claims per day.</p>
+        </div>
+
+        <div class="card action staking">
+          <h3>Staking</h3>
+          <p>Staked coins earn from the second daily update after you join (one full day). Ask to leave any time; coins unlock at the first update at least 24 hours after your last stake.</p>
+          <div class="field">
+            <input id="stakeAmt" inputmode="decimal" placeholder="Amount of 1AU" aria-label="Amount to stake">
+            <button class="chip" id="stakeMax" type="button">Max</button>
+          </div>
+          <div class="btns">
+            <button class="btn primary" id="stakeBtn" type="button" disabled>Stake</button>
+            <button class="btn ghost" id="unstakeBtn" type="button" disabled>Ask to leave</button>
+          </div>
+          <div class="btns">
+            <button class="btn ghost" id="withdrawBtn" type="button" disabled>Withdraw</button>
+            <button class="btn ghost" id="claimBtn" type="button" disabled>Claim rewards</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORACLE ============ -->
+  <section class="section" id="oracle">
+    <div class="wrap oracle">
+      <div>
+        <p class="kicker">Where the wind comes from</p>
+        <h2>Measured in space, signed on Earth.</h2>
+        <p class="sub">NOAA's Space Weather Prediction Center publishes real-time solar wind data from spacecraft parked at L1, between the Earth and the Sun. Four independent <a href="https://opsikom.com" target="_blank" rel="noopener noreferrer">Opsikom</a> operators, on three different servers, read it and sign the same 24-hour mean. The contract accepts it only with 3 of 4 signatures and publishes the median.</p>
+      </div>
+      <div class="card addrs">
+        <h3>Contracts on Base Sepolia</h3>
+        <ul id="addrs"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RISKS ============ -->
+  <section class="section" id="risks">
+    <div class="wrap">
+      <div class="head"><p class="kicker">Read this</p><h2>Honest small print.</h2></div>
+      <div class="faq">
+        <details><summary>Is this worth money?</summary><p>No. 1AU lives on Base Sepolia, a test network. Test ETH and 1AU have no value. The contract is a draft and has not been audited.</p></details>
+        <details><summary>Can storms be predicted?</summary><p>Partly. The Sun rotates about every 27 days, so some fast wind streams come back, and space-weather forecasters announce storms a few days ahead. The coin cannot be front-run on the day itself, because the wind is published and applied in the same transaction.</p></details>
+        <details><summary>What if the data stops?</summary><p>If no new reading arrives, nothing happens: no mint, no burn. A reading older than 2 days is ignored. Anyone can run the daily update, so the coin does not depend on one server.</p></details>
+        <details><summary>Single source?</summary><p>Yes: the solar wind comes from NOAA SWPC, one agency. The four operators make sure nobody can change the number on its way to the chain, not that the source is right.</p></details>
+        <details><summary>Will my balance ever shrink?</summary><p>No. Storms burn only from the V2 pool. Holders and stakers can only receive.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="brand small"><span>Solar Sail</span><em>1AU</em></div>
+    <p>Test network project · not audited · not financial advice. Wind data: NOAA SWPC via <a href="https://opsikom.com" target="_blank" rel="noopener noreferrer">Opsikom</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
