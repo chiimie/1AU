@@ -10,9 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=2">
+<link rel="stylesheet" href="assets/style.css?v=3">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
-<script src="assets/app.js?v=2" defer></script>
+<script src="assets/app.js?v=3" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -32,7 +32,8 @@
       <a href="#how">How it works</a>
       <a href="#simulator">Simulator</a>
       <a href="#tokenomics">Tokenomics</a>
-      <a href="#sail">Stake &amp; faucet</a>
+      <a href="faucet/">Faucet</a>
+      <a href="staking/">Staking</a>
     </nav>
     <span class="net-pill"><i></i>Base Sepolia · testnet</span>
   </div>
@@ -50,8 +51,8 @@
         <h1>Ride the<br><span class="glow">solar wind.</span></h1>
         <p class="lead">Every day, spacecraft a million miles from Earth measure how fast the Sun is blowing. That one number decides what <b>1AU</b> does: calm days mint new coins, solar storms burn them from the pool.</p>
         <div class="cta">
-          <a class="btn primary" href="#sail">Hoist your sail</a>
-          <a class="btn ghost" href="#how">How it works</a>
+          <a class="btn primary" href="faucet/">Claim free 1AU</a>
+          <a class="btn ghost" href="staking/">Hoist your sail: stake</a>
         </div>
       </div>
 
@@ -117,7 +118,7 @@
         <article class="rule storm">
           <div class="r-ico" aria-hidden="true">⚡</div>
           <h3>Above 600 km/s: storm</h3>
-          <p>No mint. Coins are burned <b>straight from the V2 pool</b>: 0.5% at 600 km/s, plus 0.1% for every 10 km/s more, up to <b>3%</b> at 850 km/s. Fewer coins in the pool, same ETH: the price goes up.</p>
+          <p>No mint. Coins are burned <b>straight from the V2 pool</b>: 0.5% as soon as the wind passes 600 km/s, plus 0.1% for every 10 km/s more, up to <b>3%</b> from 850 km/s. Fewer coins in the pool, same ETH: the price goes up.</p>
           <ul class="mini"><li><span>650 km/s</span><b>1.0%</b></li><li><span>700 km/s</span><b>1.5%</b></li><li><span>800 km/s</span><b>2.5%</b></li><li><span>850+ km/s</span><b>3.0%</b></li></ul>
         </article>
         <article class="rule brake">
@@ -178,54 +179,29 @@
     </div>
   </section>
 
-  <!-- ============ STAKE & FAUCET ============ -->
+  <!-- ============ FAUCET E STAKING (pagine separate) ============ -->
   <section class="section" id="sail">
     <div class="wrap">
       <div class="head">
         <p class="kicker">Hoist your sail</p>
-        <h2>Faucet and staking.</h2>
-        <p class="sub">Claim free 1AU every day, then stake it to catch 30% of every calm-day mint. Test network only: you need a little Base Sepolia ETH for gas.</p>
+        <h2>Catch some wind.</h2>
+        <p class="sub">Two ways in, each on its own page. Test network only: you need a little Base Sepolia ETH for gas.</p>
       </div>
-      <div class="dapp">
-        <div class="card wallet">
-          <div class="w-top">
-            <div><span class="label">Your wallet</span><b id="wAddr">Not connected</b></div>
-            <button class="btn primary sm" id="connect" type="button">Connect wallet</button>
-          </div>
-          <div class="w-grid">
-            <div><span>1AU</span><b id="wBal">—</b></div>
-            <div><span>ETH (Base Sepolia)</span><b id="wEth">—</b></div>
-            <div><span>Staking</span><b id="wStake">—</b></div>
-            <div><span>Rewards ready</span><b id="wRew">—</b></div>
-          </div>
-          <button class="link" id="addToken" type="button">Add 1AU to your wallet</button>
-          <p class="msg" id="wMsg" role="status"></p>
-        </div>
-
-        <div class="card action faucet">
-          <h3>Faucet</h3>
-          <p>Once a day per wallet, after the 10:30 UTC update. The amount follows the wind: <b>50,000 × wind ÷ 426</b>.</p>
-          <div class="f-amount"><b id="fAmt">—</b><span>1AU today</span></div>
-          <button class="btn primary" id="claimFaucet" type="button" disabled>Claim</button>
-          <p class="hint">Needs at least 0.0005 ETH in the wallet. Up to 800 claims per day.</p>
-        </div>
-
-        <div class="card action staking">
-          <h3>Staking</h3>
-          <p>Staked coins earn from the second daily update after you join (one full day). Ask to leave any time; coins unlock at the first update at least 24 hours after your last stake.</p>
-          <div class="field">
-            <input id="stakeAmt" inputmode="decimal" placeholder="Amount of 1AU" aria-label="Amount to stake">
-            <button class="chip" id="stakeMax" type="button">Max</button>
-          </div>
-          <div class="btns">
-            <button class="btn primary" id="stakeBtn" type="button" disabled>Stake</button>
-            <button class="btn ghost" id="unstakeBtn" type="button" disabled>Ask to leave</button>
-          </div>
-          <div class="btns">
-            <button class="btn ghost" id="withdrawBtn" type="button" disabled>Withdraw</button>
-            <button class="btn ghost" id="claimBtn" type="button" disabled>Claim rewards</button>
-          </div>
-        </div>
+      <div class="gos">
+        <a class="go faucet-go" href="faucet/">
+          <span class="go-ico" aria-hidden="true">☀</span>
+          <span class="go-k">Daily faucet</span>
+          <b>Free 1AU every day</b>
+          <span class="go-t">One claim per wallet after each 10:30 UTC update. The amount follows the wind: today <em id="sFaucetGo">—</em> 1AU.</span>
+          <span class="go-cta">Open the faucet →</span>
+        </a>
+        <a class="go stake-go" href="staking/">
+          <span class="go-ico" aria-hidden="true">⛵</span>
+          <span class="go-k">Staking</span>
+          <b>Take 30% of every calm day</b>
+          <span class="go-t">Stake your 1AU, share 30% of each mint with the other stakers, claim your rewards whenever you like.</span>
+          <span class="go-cta">Open staking →</span>
+        </a>
       </div>
     </div>
   </section>

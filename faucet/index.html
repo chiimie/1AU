@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1AU Faucet — free Solar Sail every day</title>
+<meta name="description" content="Claim free 1AU every day on Base Sepolia. The amount follows the solar wind.">
+<meta name="theme-color" content="#07080f">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=3">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
+<script src="../assets/app.js?v=3" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="wrap nav-in">
+    <a class="brand" href="../" aria-label="Solar Sail home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#ff7a3d"/></linearGradient></defs>
+        <path d="M8 34 L20 4 L32 34 Q20 27 8 34Z" fill="url(#bm)"/>
+        <path d="M20 4 L20 30" stroke="#07080f" stroke-width="1.6" opacity=".55"/>
+      </svg>
+      <span>Solar Sail</span><em>1AU</em>
+    </a>
+    <nav class="links" aria-label="Pages">
+      <a href="../#today">Today</a>
+      <a href="../#how">How it works</a>
+      <a href="../#simulator">Simulator</a>
+      <a href="../#tokenomics">Tokenomics</a>
+      <a href="./" aria-current="page">Faucet</a>
+      <a href="../staking/">Staking</a>
+    </nav>
+    <span class="net-pill"><i></i>Base Sepolia · testnet</span>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-hero">
+    <canvas id="wind" aria-hidden="true"></canvas>
+    <div class="sun small" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="eyebrow">Daily faucet</p>
+      <h1>Free 1AU,<br><span class="glow">every day.</span></h1>
+      <p class="lead">One claim per wallet each day, right after the solar wind reading. The faster the wind, the bigger the claim.</p>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap two">
+      <div>
+        <div class="kv-grid">
+          <div class="stat"><span>Today's claim</span><b id="fAmt">—</b><small>1AU per wallet</small></div>
+          <div class="stat"><span>Solar wind</span><b id="fSpeed">—</b><small>today's reading</small></div>
+          <div class="stat"><span>Claims today</span><b id="fClaims">—</b><small>first come, first served</small></div>
+          <div class="stat"><span>Next opening</span><b id="fNext">—</b><small>10:30 UTC every day</small></div>
+        </div>
+
+        <h2 class="h-small">How the faucet works</h2>
+        <ol class="steps">
+          <li class="step"><b>Connect a wallet on Base Sepolia</b><span>MetaMask, Coinbase Wallet or any browser wallet. The page switches the network for you.</span></li>
+          <li class="step"><b>Keep a little test ETH</b><span>The wallet needs at least 0.0005 Base Sepolia ETH. It pays the gas and keeps bots from emptying the faucet with thousands of empty wallets.</span></li>
+          <li class="step"><b>Claim once a day</b><span>The faucet opens again after every daily update at 10:30 UTC. Up to 800 claims per day, then it closes until the next update.</span></li>
+          <li class="step"><b>The wind sets the amount</b><span><b>50,000 × wind ÷ 426.</b> A calm 300 km/s day gives about 35,000 1AU; a 600 km/s day about 70,000; a strong storm at 850 km/s almost 100,000.</span></li>
+        </ol>
+        <p class="note">The faucet holds 20% of the supply (29.9 billion 1AU) and still has <b id="fLeft">—</b>. It works only from a regular wallet, not from a smart-contract wallet.</p>
+      </div>
+
+      <aside class="card panel">
+        <div class="w-top">
+          <div><span class="label">Your wallet</span><b id="wAddr">Not connected</b></div>
+          <button class="btn primary sm" id="connect" type="button">Connect wallet</button>
+        </div>
+        <div class="w-grid">
+          <div><span>1AU</span><b id="wBal">—</b></div>
+          <div><span>ETH (Base Sepolia)</span><b id="wEth">—</b></div>
+        </div>
+        <button class="btn primary big" id="claimFaucet" type="button" disabled>Claim today's 1AU</button>
+        <p class="msg" id="wMsg" role="status"></p>
+        <button class="link" id="addToken" type="button">Add 1AU to your wallet</button>
+        <div class="next-step">
+          <span>Got your 1AU?</span>
+          <a href="../staking/">Stake it and earn 30% of every calm day →</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="brand small"><span>Solar Sail</span><em>1AU</em></div>
+    <p>Test network project · not audited · not financial advice. Wind data: NOAA SWPC via <a href="https://opsikom.com" target="_blank" rel="noopener noreferrer">Opsikom</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

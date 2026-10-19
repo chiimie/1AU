@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1AU Staking — sail on every calm day</title>
+<meta name="description" content="Stake 1AU on Base Sepolia and share 30% of every calm-day mint. How it works, rules and your position.">
+<meta name="theme-color" content="#07080f">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=3">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" defer></script>
+<script src="../assets/app.js?v=3" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="wrap nav-in">
+    <a class="brand" href="../" aria-label="Solar Sail home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#ff7a3d"/></linearGradient></defs>
+        <path d="M8 34 L20 4 L32 34 Q20 27 8 34Z" fill="url(#bm)"/>
+        <path d="M20 4 L20 30" stroke="#07080f" stroke-width="1.6" opacity=".55"/>
+      </svg>
+      <span>Solar Sail</span><em>1AU</em>
+    </a>
+    <nav class="links" aria-label="Pages">
+      <a href="../#today">Today</a>
+      <a href="../#how">How it works</a>
+      <a href="../#simulator">Simulator</a>
+      <a href="../#tokenomics">Tokenomics</a>
+      <a href="../faucet/">Faucet</a>
+      <a href="./" aria-current="page">Staking</a>
+    </nav>
+    <span class="net-pill"><i></i>Base Sepolia · testnet</span>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-hero">
+    <canvas id="wind" aria-hidden="true"></canvas>
+    <div class="sun small" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="eyebrow">Staking</p>
+      <h1>Hoist your sail.<br><span class="glow">Catch 30% of the wind.</span></h1>
+      <p class="lead">Every calm day mints new 1AU, and 30% of it goes to the people who stake. You keep your coins, you can leave when you want, and you claim your rewards whenever you like.</p>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap">
+      <div class="kv-grid four">
+        <div class="stat"><span>Staked and earning</span><b id="kActive">—</b><small>shares the 30%</small></div>
+        <div class="stat"><span>Joining</span><b id="kJoining">—</b><small>start earning after a full day</small></div>
+        <div class="stat"><span>To stakers on a typical day</span><b id="kDaily">—</b><small>at 426 km/s</small></div>
+        <div class="stat"><span>Your share</span><b id="kPer">—</b><small id="kPerNote">per 1,000,000 staked</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap two">
+      <div>
+        <h2 class="h-small">How staking works</h2>
+        <ol class="steps">
+          <li class="step"><b>Stake any amount</b><span>Your 1AU move into the staking part of the contract. They are never burned: storms only burn from the pool, never from stakers or wallets.</span></li>
+          <li class="step"><b>Wait one full day</b><span>New stakes start earning at the <b>second</b> daily update after you join, so nobody can jump in a minute before 10:30 UTC and grab a day they did not sail.</span></li>
+          <li class="step"><b>Earn on every calm day</b><span>When the wind is at or below 600 km/s, the coin mints <b>0.035% of the supply × (wind ÷ 426)²</b> and <b>30%</b> of it is split among all earning stakers, by stake size. Faster wind, bigger day.</span></li>
+          <li class="step"><b>Storm days pay nothing</b><span>Above 600 km/s there is no mint, so no staking rewards that day. Instead, coins are burned from the pool, which pushes the price up.</span></li>
+          <li class="step"><b>Claim when you like</b><span>Rewards pile up in the contract. Claim them at any time: they land in your wallet, where they also receive the holders' 10%.</span></li>
+          <li class="step"><b>Leave at any time</b><span>"Ask to leave" stops your coins from earning at once. They unlock at the first daily update that comes at least <b>24 hours after your last stake</b> (the minimum is one day); then press Withdraw.</span></li>
+        </ol>
+        <div class="callout">
+          <b>The brake favours stakers.</b>
+          <span>If the supply grows more than 10% over 365 days (only possible with a very quiet Sun), holders stop receiving first. Stakers keep earning, on a share that fades to zero at 15%.</span>
+        </div>
+        <p class="note">Next daily update in <b id="kNext">—</b> (10:30 UTC). Test network: the contract is a draft and has not been audited.</p>
+      </div>
+
+      <aside class="card panel">
+        <div class="w-top">
+          <div><span class="label">Your wallet</span><b id="wAddr">Not connected</b></div>
+          <button class="btn primary sm" id="connect" type="button">Connect wallet</button>
+        </div>
+        <div class="w-grid">
+          <div><span>1AU in wallet</span><b id="wBal">—</b></div>
+          <div><span>ETH (Base Sepolia)</span><b id="wEth">—</b></div>
+          <div><span>Earning</span><b id="wEarning">—</b></div>
+          <div><span>Joining</span><b id="wJoining">—</b></div>
+          <div><span>Leaving</span><b id="wLeaving">—</b></div>
+          <div class="hl"><span>Rewards ready</span><b id="wRew">—</b></div>
+        </div>
+        <div class="field">
+          <input id="stakeAmt" inputmode="decimal" placeholder="Amount of 1AU" aria-label="Amount of 1AU">
+          <button class="chip" id="stakeMax" type="button">Max</button>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="stakeBtn" type="button" disabled>Stake</button>
+          <button class="btn ghost" id="unstakeBtn" type="button" disabled>Ask to leave</button>
+        </div>
+        <div class="btns">
+          <button class="btn ghost" id="withdrawBtn" type="button" disabled>Withdraw</button>
+          <button class="btn ghost" id="claimBtn" type="button" disabled>Claim rewards</button>
+        </div>
+        <p class="info" id="wInfo"></p>
+        <p class="msg" id="wMsg" role="status"></p>
+        <button class="link" id="addToken" type="button">Add 1AU to your wallet</button>
+        <div class="next-step">
+          <span>No 1AU yet?</span>
+          <a href="../faucet/">Claim some from the daily faucet →</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="brand small"><span>Solar Sail</span><em>1AU</em></div>
+    <p>Test network project · not audited · not financial advice. Wind data: NOAA SWPC via <a href="https://opsikom.com" target="_blank" rel="noopener noreferrer">Opsikom</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
